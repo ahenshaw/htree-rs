@@ -17,16 +17,12 @@ impl Default for HtreeApp {
 const MAX_LEVEL: usize = 16;
 
 impl HtreeApp {
-    /// Called once before the first frame.
-    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
-        // This is also where you can customize the look and feel of egui using
-        // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
-
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         // Load previous app state (if any).
         // Note that you must enable the `persistence` feature for this to work.
-        // if let Some(storage) = cc.storage {
-        //     return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
-        // }
+        if let Some(storage) = cc.storage {
+            return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
+        }
 
         Default::default()
     }
@@ -34,22 +30,16 @@ impl HtreeApp {
 
 impl eframe::App for HtreeApp {
     /// Called by the frame work to save state before shutdown.
-    fn save(&mut self, _storage: &mut dyn eframe::Storage) {
-        // eframe::set_value(storage, eframe::APP_KEY, self);
+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+        eframe::set_value(storage, eframe::APP_KEY, self);
     }
 
     /// Called each time the UI needs repainting, which may be many times per second.
-    /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Examples of how to create different panels and windows.
-        // Pick whichever suits you.
-        // Tip: a good default choice is to just keep the `CentralPanel`.
-        // For inspiration and more examples, go to https://emilk.github.io/egui
         ctx.set_pixels_per_point(1.0);
         let mut offset = 0.0;
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
                 ui.add(
                     egui::widgets::Slider::new(&mut self.max_level, 1..=MAX_LEVEL)
@@ -60,13 +50,10 @@ impl eframe::App for HtreeApp {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            // dbg!(ctx.available_rect());
             let r = ui.available_rect_before_wrap();
-            // dbg!(&r);
-            let center = egui::pos2(r.width() / 2.0, r.height() / 2.0 + offset);
             let l = r.width().min(r.height()) / 2.0_f32.sqrt();
             let painter = ui.painter();
-            self.draw_horizontal(painter, &center, l, 0);
+            self.draw_horizontal(painter, &r.center(), l, 0);
         });
     }
 }
